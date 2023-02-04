@@ -15,17 +15,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, MakeupActivity::class.java))
         }
 
-        button_glasses.setOnClickListener {
-            startActivity(Intent(this, GlassesActivity::class.java))
-        }
-
-        button_regions.setOnClickListener {
-            startActivity(Intent(this, FaceRegionsActivity::class.java))
-        }
-
-        button_face_landmarks.setOnClickListener {
-            startActivity(Intent(this, FaceLandmarksActivity::class.java))
-        }
     }
 
 }

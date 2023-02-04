@@ -3,21 +3,17 @@ package no.realitylab.arface
 import android.app.ActivityManager
 import android.content.Context
 import android.os.Bundle
-import android.os.Handler
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.ar.core.ArCoreApk
 import com.google.ar.core.AugmentedFace
 import com.google.ar.core.TrackingState
-import com.google.ar.sceneform.FrameTime
-import com.google.ar.sceneform.Node
-import com.google.ar.sceneform.math.Vector3
-import com.google.ar.sceneform.rendering.*
+import com.google.ar.sceneform.rendering.Renderable
+import com.google.ar.sceneform.rendering.Texture
 import com.google.ar.sceneform.ux.AugmentedFaceNode
 import kotlinx.android.synthetic.main.activity_makeup.*
 
-class FilterFace : AppCompatActivity() {
+class eye : AppCompatActivity() {
 
     private var mWidth = 1000
     private var mHeight = 1000
@@ -40,7 +36,7 @@ class FilterFace : AppCompatActivity() {
         setContentView(R.layout.activity_makeup)
         arFragment = face_fragment as FaceArFragment
         Texture.builder()
-            .setSource(this, R.drawable.tilik)
+            .setSource(this, R.drawable.eye1)
             .build()
             .thenAccept { texture -> faceMeshTexture = texture }
 
