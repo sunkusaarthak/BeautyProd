@@ -83,10 +83,11 @@ class MakeupActivity : AppCompatActivity() {
                             }
                         }
                     }
-                if (capturePicture) {
-                    capturePicture = false;
-                    SavePicture();
-                }
+            }
+
+            if (capturePicture) {
+                capturePicture = false;
+                SavePicture();
             }
         }
     }
