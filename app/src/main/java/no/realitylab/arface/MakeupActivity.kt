@@ -6,11 +6,10 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.media.Image
-import android.opengl.GLES20
-import android.os.Bundle
-import android.os.Environment
-import android.util.Log
+import android.graphics.Rect
+import android.os.*
+import android.view.PixelCopy
+import android.view.SurfaceView
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -22,9 +21,9 @@ import com.google.ar.sceneform.rendering.Texture
 import com.google.ar.sceneform.ux.AugmentedFaceNode
 import kotlinx.android.synthetic.main.activity_makeup.*
 import java.io.File
+import java.io.FileDescriptor.out
 import java.io.FileOutputStream
 import java.io.IOException
-import java.nio.IntBuffer
 
 
 @Suppress("DEPRECATION")
@@ -173,15 +172,6 @@ class MakeupActivity : AppCompatActivity() {
      */
     @Throws(IOException::class)
     open fun SavePicture() {
-        val pixelData = IntArray(mWidth * mHeight)
-
-        // Read the pixels from the current GL frame.
-        val buf = IntBuffer.wrap(pixelData)
-        buf.position(0)
-        GLES20.glReadPixels(
-            0, 0, mWidth, mHeight,
-            GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buf
-        )
 
         // Create a file in the Pictures/HelloAR album.
         val out = File(
@@ -196,28 +186,80 @@ class MakeupActivity : AppCompatActivity() {
             out.parentFile.mkdirs()
         }
 
-        // Convert the pixel data from RGBA to what Android wants, ARGB.
-        val bitmapData = IntArray(pixelData.size)
-        for (i in 0 until mHeight) {
-            for (j in 0 until mWidth) {
-                val p = pixelData[i * mWidth + j]
-                val b = p and 0x00ff0000 shr 16
-                val r = p and 0x000000ff shl 16
-                val ga = p and -0xff0100
-                bitmapData[(mHeight - i - 1) * mWidth + j] = ga or r or b
-            }
-        }
-        // Create a bitmap.
-        val bmp = Bitmap.createBitmap(
-            bitmapData,
-            mWidth, mHeight, Bitmap.Config.ARGB_8888
-        )
 
+        var frag :View = findViewById(R.id.fragment_main)
+        var bmp : Bitmap = takeScreenshotOfRootView(frag)
+        getScreenShotFromView(frag, this) {
+            bmp = it
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+        } else {
+            bmp = getScreenShot(frag)
+        }
         // Write it to disk.
+        storeImage(bmp, out)
+
+    }
+
+    fun storeImage(bmp : Bitmap, out : File) {
         val fos = FileOutputStream(out)
         bmp.compress(Bitmap.CompressFormat.PNG, 100, fos)
         fos.flush()
         fos.close()
-        runOnUiThread {  }
+        runOnUiThread { Toast.makeText(this, "Img Save!", Toast.LENGTH_SHORT).show() }
+    }
+
+    // for api level 28
+    fun getScreenShotFromView(view: View, activity: Activity, callback: (Bitmap) -> Unit) {
+        activity.window?.let { window ->
+            val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+            val locationOfViewInWindow = IntArray(2)
+            view.getLocationInWindow(locationOfViewInWindow)
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    PixelCopy.request(
+                        window,
+                        Rect(
+                            locationOfViewInWindow[0],
+                            locationOfViewInWindow[1],
+                            locationOfViewInWindow[0] + view.width,
+                            locationOfViewInWindow[1] + view.height
+                        ), bitmap, { copyResult ->
+                            if (copyResult == PixelCopy.SUCCESS) {
+                                callback(bitmap) }
+                            else {
+
+                            }
+                            // possible to handle other result codes ...
+                        },
+                        Handler()
+                    )
+                }
+            } catch (e: IllegalArgumentException) {
+                // PixelCopy may throw IllegalArgumentException, make sure to handle it
+                e.printStackTrace()
+            }
+        }
+    }
+
+    //deprecated version
+/*  Method which will return Bitmap after taking screenshot. We have to pass the view which we want to take screenshot.  */
+    fun getScreenShot(view: View): Bitmap {
+        val screenView = view.rootView
+        screenView.isDrawingCacheEnabled = true
+        val bitmap = Bitmap.createBitmap(screenView.drawingCache)
+        screenView.isDrawingCacheEnabled = false
+        return bitmap
+    }
+    private fun takeScreenshot(view: View): Bitmap {
+        view.isDrawingCacheEnabled = true
+        view.buildDrawingCache(true)
+        val b = Bitmap.createBitmap(view.drawingCache)
+        view.isDrawingCacheEnabled = false
+        return b
+    }
+    fun takeScreenshotOfRootView(v: View): Bitmap {
+        return takeScreenshot(v.rootView)
     }
 }
