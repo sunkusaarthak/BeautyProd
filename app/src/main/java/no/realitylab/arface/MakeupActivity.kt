@@ -1,16 +1,16 @@
 package no.realitylab.arface
 
 import android.Manifest
+import android.R.attr.viewportHeight
+import android.R.attr.viewportWidth
 import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.media.Image
 import android.opengl.GLES20
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -25,13 +25,14 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.IntBuffer
+import javax.microedition.khronos.opengles.GL10
 
 
 @Suppress("DEPRECATION")
 class MakeupActivity : AppCompatActivity() {
 
-    private var mWidth = 0
-    private var mHeight = 0
+    private var mWidth = 1000
+    private var mHeight = 1000
     private var capturePicture = false
 
     companion object {
@@ -51,7 +52,7 @@ class MakeupActivity : AppCompatActivity() {
         setContentView(R.layout.activity_makeup)
         arFragment = face_fragment as FaceArFragment
         Texture.builder()
-            .setSource(this, R.drawable.htf)
+            .setSource(this, R.drawable.background_htf)
             .build()
             .thenAccept { texture -> faceMeshTexture = texture }
 
@@ -84,12 +85,12 @@ class MakeupActivity : AppCompatActivity() {
                         }
                     }
             }
-
             if (capturePicture) {
                 capturePicture = false;
                 SavePicture();
             }
         }
+
     }
 
 
@@ -168,11 +169,13 @@ class MakeupActivity : AppCompatActivity() {
         this.capturePicture = true
     }
 
+
     /**
      * Call from the GLThread to save a picture of the current frame.
      */
     @Throws(IOException::class)
     open fun SavePicture() {
+
         val pixelData = IntArray(mWidth * mHeight)
 
         // Read the pixels from the current GL frame.
@@ -218,6 +221,6 @@ class MakeupActivity : AppCompatActivity() {
         bmp.compress(Bitmap.CompressFormat.PNG, 100, fos)
         fos.flush()
         fos.close()
-        runOnUiThread {  }
+        runOnUiThread { Toast.makeText(this, "Imaged Saved", Toast.LENGTH_SHORT).show() }
     }
 }
