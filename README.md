@@ -15,7 +15,7 @@ ArXMarket offers several advantages over traditional beauty product shopping met
 
 ## How we built it 🧑‍💻
 
-ArXMarket is an Android AR application with a NFT marketplace built using Solidity, TypeScript, and Next.js.
+ArXMarket is an Android AR application with a NFT marketplace built using Solidity, TypeScript, and Next.js
 
 #AR Try-On Feature
 To build the AR try-on feature, we utilized the AR Core library and integrated it into our Android app. The AR Core library allowed us to apply the beauty products to the user's face in real-time, providing a realistic and interactive experience.
